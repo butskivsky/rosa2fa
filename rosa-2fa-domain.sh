@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Определяем глобальные переменные
-domainname="domain.com"
+domainname="domain.local"
 dns="10.0.1.1"
 dns1="10.0.1.2"
 username="administrator"
@@ -62,7 +62,7 @@ function join-domain () {
 function import-root-ca () {
     cat << EOF > /etc/pkcs11/cacert.pem
 -----BEGIN CERTIFICATE-----
-Содержимое корневого Сертификата
+КОРНЕВОЙ СЕРТИФИКАТ
 -----END CERTIFICATE-----
 
 EOF
@@ -77,21 +77,16 @@ function install-pre-req()
 {
     sed -i.bak s/enabled=0/enabled=1/g /etc/yum.repos.d/rels.repo
 	yum -y update
-    yum -y install  realmd  samba-common-tools  sssd-tools krb5-pkinit opensc
-                    libreoffice libreoffice-base libreoffice-calc \
-                    libreoffice-core libreoffice-help-ru \
-                    libreoffice-langpack-ru libreoffice-pdfimport libreoffice-writer
+    yum -y install  realmd  samba-common-tools  sssd-tools krb5-pkinit opensc 
+    #yum -y install libreoffice libreoffice-base libreoffice-calc libreoffice-core libreoffice-help-ru libreoffice-langpack-ru libreoffice-pdfimport libreoffice-writer
     yum install -y https://download.rutoken.ru/Rutoken/PKCS11Lib/2.0.5.0/Linux/x64/librtpkcs11ecp-2.0.5.0-1.x86_64.rpm 
     systemctl disable --now avahi-daemon
 	mkdir -p /root/.ssh
-    echo "ssh-rsa ###СОДЕРЖИМОЕ открытого ключа для подлючения по SSH" > /root/.ssh/authorized_keys 
+    echo "КОРНЕВОЙ СЕРТИФИКАТ для подключения по SSH" > /root/.ssh/authorized_keys 
 	chmod 0700 /root/.ssh
 	chmod 0644 /root/.ssh/authorized_keys
     ln -s /usr/lib64/opensc-pkcs11.so /usr/lib/opensc-pkcs11.so
-    if ! [ ls /usr/lib64/security/librtpam.so.1.0.0 ]
-	then
-		wget https://download.rutoken.ru/Rutoken/PAM/1.0.0/x86_64/librtpam.so.1.0.0 -O /usr/lib64/security/librtpam.so.1.0.0 && chmod 644 /usr/lib64/security/librtpam.so.1.0.0 
-	fi
+    wget https://download.rutoken.ru/Rutoken/PAM/1.0.0/x86_64/librtpam.so.1.0.0 -O /usr/lib64/security/librtpam.so.1.0.0 && chmod 644 /usr/lib64/security/librtpam.so.1.0.0 
 
 }
 
@@ -117,13 +112,13 @@ function modify-sssd() {
     cat << EOF > $SSSDCONF
 
 [sssd]
-domains = mzrk.local
+domains = $domainname
 config_file_version = 2
 services = nss, pam
 
-[domain/mzrk.local]
-ad_domain = mzrk.local
-krb5_realm = MZRK.LOCAL
+[domain/$domainname]
+ad_domain = $domainname
+krb5_realm = $domainname
 realmd_tags = manages-system joined-with-samba 
 cache_credentials = True
 id_provider = ad
@@ -151,8 +146,8 @@ function modify-krb5() {
     cat << EOF > $KRB5CONF
 
 [libdefaults]
- default_realm = MZRK.LOCAL
- pkinit_kdc_hostname = mzrk.local
+ default_realm = $domainname
+ pkinit_kdc_hostname = $domainname
  dns_lookup_realm = false
  ticket_lifetime = 24h
  renew_lifetime = 7d
@@ -160,40 +155,20 @@ function modify-krb5() {
  rdns = false
  default_ccache_name = KEYRING:persistent:%{uid}
  pkinit_anchors = FILE:/etc/pkcs11/cacert.pem
- pkinit_identities = PKCS11:opensc-pkcs11.so:slotid=0:certid=01
+ pkinit_identities = PKCS11:librtpkcs11ecp.so:slotid=0:certid=01
  default_ccache_name = KEYRING:persistent:%{uid}
  canonicalize = True
  
 [realms]
- MZRK.LOCAL = {
+ $domainname = {
  }
 
 [domain_realm]
- mzrk.local = MZRK.LOCAL
- .mzrk.local = MZRK.LOCAL
+ $domainname = $domainname
+ .$domainname = $domainname
 
 EOF
 }
-
-
-if [[ $hostname =~ ^[0-9]{1,3}-[0-9]{1,3}$ ]]; then
-echo ""
-else
-echo "Имя компьютера указано не верно XXX-YYY."
-exit
-fi
-if  [ -z $hostname ]; then
-echo hostname is not specified.
-exit
-fi
-if  [ -z $servername ]; then
-echo servername is not specified.
-exit
-fi
-if  [ -z $username ]; then
-echo username is not specified.
-exit
-fi
 
 
 #======================================================================
@@ -235,10 +210,25 @@ while [ $# -ne 0 ]; do
 done
 
 
+if [[ $hostname =~ ^[0-9]{1,3}-[0-9]{1,3}$ ]]; then
+echo ""
+else
+echo "Имя компьютера указано не верно XXX-YYY."
+exit
+fi
+if  [ -z $hostname ]; then
+echo hostname is not specified.
+exit
+fi
+if  [ -z $username ]; then
+echo username is not specified.
+exit
+fi
+
 usage
-install-pre-req
-modify-dns
 modify-host-name
+modify-dns
+install-pre-req
 join-domain
 import-root-ca
 modify-krb5
