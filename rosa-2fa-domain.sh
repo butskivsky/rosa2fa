@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Определяем глобальные переменные
-domainname="mzrk.local"
+domainname="domain.com"
 dns="10.0.1.1"
 dns1="10.0.1.2"
-username="butskivskyadm"
+username="administrator"
 hostname=""
 MO="" #ОТРЕДАКТИРОВАТЬ! Привести к виду MO="XX-" По номеру сети 
 OS="-rosa"
@@ -62,25 +62,7 @@ function join-domain () {
 function import-root-ca () {
     cat << EOF > /etc/pkcs11/cacert.pem
 -----BEGIN CERTIFICATE-----
-MIIDYTCCAkmgAwIBAgIQEbMPJP+0KrtFcjXuvTj2DzANBgkqhkiG9w0BAQ0FADBD
-MRUwEwYKCZImiZPyLGQBGRYFbG9jYWwxFDASBgoJkiaJk/IsZAEZFgRtenJrMRQw
-EgYDVQQDEwttenJrLVBLSS1DQTAeFw0yMDA2MTEwNjU3NTBaFw0yNTA2MTEwNzA3
-NDhaMEMxFTATBgoJkiaJk/IsZAEZFgVsb2NhbDEUMBIGCgmSJomT8ixkARkWBG16
-cmsxFDASBgNVBAMTC216cmstUEtJLUNBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
-MIIBCgKCAQEAwFmfLTLdrZQDOn2LuQWFLbYkMz53/D/OnMUIgNNtTcwMrjt42cJ1
-ERaeEFI/PqnbeJSRDAIsiRcfnrP8zJeu5zkhgrtRi/MyD4pX/7sN4ZacevDweLaC
-xAaiRtERCRIl0uqfZXbVUmxFEQvbTWqlzTELIaOcYG7m8Hcx+WacHKOPKM64san7
-DQWebgT0AE77/a/yeHJ0jknl8T4Q0V0rY8JPa1G+fFEGiN679fPq4iotZHIc+KpW
-o7mzIvGz2giUAqtUUY02t/PUU0W9D/DMrh1/BSYao9UjYWiSBxG4xTdaB1dkc6WL
-42wUmMxos1cOGyNB0UZvgZsEnht97VVDhQIDAQABo1EwTzALBgNVHQ8EBAMCAYYw
-DwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQU7nLsLLuHRRsP6AN0BjatQ1A4mGYw
-EAYJKwYBBAGCNxUBBAMCAQAwDQYJKoZIhvcNAQENBQADggEBADeMLq/Vcc377yPo
-qCBVO7vMHYiYPnVjNbk7YtaM6JvlKp4EFrX7saD8bcBG8tRm8KJHsL5XW5DUuvCJ
-cODE61gl+DNnICGHHVQ11eESCi/MKxKQtrM6AW1dN4UvUyzTcd/ZY60CJYfD7fvp
-+uNpRFGrWwD4/q7/8JUrvOLUPsmxdlNiRGHgPUqqoGYIKaf+1kyIwkH5fJv8sdpq
-U3SpaeDp3xXMDah50OFCxlf7cp0DWSI6cZ2h8AJWLhnw+IlTn44TghvZYoftrJ9m
-iP8GCL7YJAW4ggQseRm7sGP1FPo1k+wB9/BLy2siy2E8fbMrHEmdO4N54p7PWlrG
-UlcHm0k=
+Содержимое корневого Сертификата
 -----END CERTIFICATE-----
 
 EOF
@@ -102,7 +84,7 @@ function install-pre-req()
     yum install -y https://download.rutoken.ru/Rutoken/PKCS11Lib/2.0.5.0/Linux/x64/librtpkcs11ecp-2.0.5.0-1.x86_64.rpm 
     systemctl disable --now avahi-daemon
 	mkdir -p /root/.ssh
-    echo "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAoWKb3s0fLdln6LSgdAMjczUaScGL1NTRJX0aq4AndAcUeAWNDX0HJ6uY2PkSVlbORDd4uY39VF4iQalc+APD8YOA7/cXmtTJvFpHGPMeFVfzsIqeimENEt6dGm56Z8qmC3Y+mRMHX+vJRe8koc8DNpEb+UQfhnfATSWSdlyo5PGfklPBm1kvXgC2r1R0tq2Poj4odg94JcrxZqxuMlys481R8cATVgnPkrE74sWB9m4NPphKjw7408x2Eu0yVWK15n9pIP1HZFv5xohsas8Hi37LJTRW6fMmMPSRStDtMqH8LIoQjeMHYKZWb+MAPawMq+o6Dqhc04eHrGjbNrXbIw== rsa-key-20190730" > /root/.ssh/authorized_keys 
+    echo "ssh-rsa ###СОДЕРЖИМОЕ открытого ключа для подлючения по SSH" > /root/.ssh/authorized_keys 
 	chmod 0700 /root/.ssh
 	chmod 0644 /root/.ssh/authorized_keys
     ln -s /usr/lib64/opensc-pkcs11.so /usr/lib/opensc-pkcs11.so
